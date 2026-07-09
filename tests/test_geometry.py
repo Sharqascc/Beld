@@ -22,8 +22,7 @@ def make_seg():
         y1=0.0,
         x2=10.0,
         y2=0.0,
-        orientation="horizontal",
-        is_exterior=True,
+        exterior=True,
     )
 
 
@@ -54,8 +53,7 @@ def test_point_to_t_zero_length_segment():
         y1=1.0,
         x2=1.0,
         y2=1.0,
-        orientation="point",
-        is_exterior=False,
+        exterior=False,
     )
     assert point_to_t(seg, (5.0, 5.0)) == 0.0
 

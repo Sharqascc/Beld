@@ -73,11 +73,17 @@ def extract_wall_segments(rooms: List[Room]) -> List[WallSegment]:
             room_b: Optional[str] = None
             room_b_type: Optional[str] = None
             edge = LineString([(x1, y1), (x2, y2)])
+            edge_len = edge.length
 
             for other in rooms:
                 if other.id == room.id:
                     continue
-                if other.polygon.boundary.distance(edge) < 0.01:
+                # Measure how much of this edge actually runs along the
+                # other room's boundary, not just whether it touches it.
+                # A corner touch has ~0 overlap length; a true shared
+                # wall has overlap length close to the full edge.
+                overlap = edge.intersection(other.polygon.boundary.buffer(0.02))
+                if edge_len > 0 and overlap.length > 0.5 * edge_len:
                     room_b = other.id
                     room_b_type = other.room_type
                     break
