@@ -1,5 +1,7 @@
+import os
 import sys
-sys.path.insert(0, "/content/Beld")
+
+sys.path.insert(0, os.path.abspath("/content/beld"))
 
 def test_imports():
     import beld

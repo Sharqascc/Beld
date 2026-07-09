@@ -2,32 +2,19 @@
 beld.rendering
 --------------
 SVG renderer for FloorPlan objects.
-
-Usage
------
-    from beld.rendering import SVGRenderer
-    svg_str = SVGRenderer(scale=60, margin=40).render(plan)
 """
 
 from __future__ import annotations
 
+from collections import defaultdict
+
 from beld.models import FloorPlan
+from beld.geometry import point_to_t
 from .transform import SVGTransformMixin
 from .svg_elements import SVGElementMixin
 
 
 class SVGRenderer(SVGTransformMixin, SVGElementMixin):
-    """
-    Converts a FloorPlan into an SVG string.
-
-    Parameters
-    ----------
-    scale : float
-        Pixels per metre (default 60).
-    margin : float
-        Pixel padding around the drawing (default 40).
-    """
-
     EXTERIOR_WALL_COLOUR = "#1a237e"
     INTERIOR_WALL_COLOUR = "#333333"
     ROOM_FILL = "#f5f5f5"
@@ -43,17 +30,43 @@ class SVGRenderer(SVGTransformMixin, SVGElementMixin):
         self.scale = scale
         self.margin = margin
 
-# ------------------------------------------------------------------
-    # Public render method
-    # ------------------------------------------------------------------
+    def _opening_intervals_by_wall(self, plan: FloorPlan):
+        gaps = defaultdict(list)
+
+        for door in plan.doors:
+            wall = next((w for w in plan.walls if w.wall_id == door.wall_id), None)
+            if wall and wall.length > 0:
+                ct = point_to_t(wall, door.center)
+                ht = (door.width / 2) / wall.length
+                gaps[wall.wall_id].append((max(0.0, ct - ht), min(1.0, ct + ht)))
+
+        for win in plan.windows:
+            wall = next((w for w in plan.walls if w.wall_id == win.wall_id), None)
+            if wall and wall.length > 0:
+                ct = point_to_t(wall, win.center)
+                ht = (win.width / 2) / wall.length
+                gaps[wall.wall_id].append((max(0.0, ct - ht), min(1.0, ct + ht)))
+
+        merged = {}
+        for wall_id, intervals in gaps.items():
+            intervals = sorted(intervals)
+            out = []
+            for a, b in intervals:
+                if not out or a > out[-1][1] + 1e-6:
+                    out.append([a, b])
+                else:
+                    out[-1][1] = max(out[-1][1], b)
+            merged[wall_id] = [(a, b) for a, b in out]
+        return merged
 
     def render(self, plan: FloorPlan) -> str:
         if not self._setup_transform(plan):
             return "<svg></svg>"
 
+        self._wall_gaps = self._opening_intervals_by_wall(plan)
+
         lines = [
-            f'<svg xmlns="http://www.w3.org/2000/svg" '
-            f'width="{self._svg_w:.2f}" height="{self._svg_h:.2f}">',
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{self._svg_w:.2f}" height="{self._svg_h:.2f}">',
             self._render_style(),
         ]
 
@@ -67,5 +80,4 @@ class SVGRenderer(SVGTransformMixin, SVGElementMixin):
             lines.append(self._render_door(door))
 
         lines.append("</svg>")
-        return "\n".join(lines)
-
+        return "".join(lines)

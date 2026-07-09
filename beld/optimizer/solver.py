@@ -64,7 +64,7 @@ class SolverResult:
         if self.notes:
             lines.append("- notes:")
             lines.extend([f"  - {n}" for n in self.notes])
-        return "\n".join(lines)
+        return "".join(lines)
 
 
 def _intersection_area(a: RoomRect, b: RoomRect) -> float:

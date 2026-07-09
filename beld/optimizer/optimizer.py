@@ -24,7 +24,7 @@ class OptimizationResult:
         if self.ai_result.suggestions:
             lines.append("- suggestions:")
             lines.extend([f"  - {s}" for s in self.ai_result.suggestions])
-        return "\n".join(lines)
+        return "".join(lines)
 
 
 class LayoutOptimizer:
