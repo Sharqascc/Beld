@@ -1,0 +1,440 @@
+{
+  "metadata": {
+    "total_rooms": 5,
+    "total_walls": 22,
+    "total_doors": 6,
+    "total_windows": 9,
+    "exterior_walls": 12,
+    "interior_walls": 10
+  },
+  "rooms": [
+    {
+      "id": "Living Room",
+      "type": "living",
+      "area": 20.0,
+      "centroid": [
+        2.5,
+        2.0
+      ]
+    },
+    {
+      "id": "Kitchen",
+      "type": "kitchen",
+      "area": 20.0,
+      "centroid": [
+        7.5,
+        2.0
+      ]
+    },
+    {
+      "id": "Bedroom",
+      "type": "bedroom",
+      "area": 20.0,
+      "centroid": [
+        12.5,
+        2.0
+      ]
+    },
+    {
+      "id": "Bathroom",
+      "type": "bathroom",
+      "area": 9.0,
+      "centroid": [
+        13.5,
+        5.5
+      ]
+    },
+    {
+      "id": "Hallway",
+      "type": "hallway",
+      "area": 20.0,
+      "centroid": [
+        9.5,
+        2.0
+      ]
+    }
+  ],
+  "walls": [
+    {
+      "id": "W0000",
+      "length": 4.98,
+      "exterior": true,
+      "rooms": [
+        "Living Room"
+      ]
+    },
+    {
+      "id": "W0001",
+      "length": 4.0,
+      "exterior": false,
+      "rooms": [
+        "Living Room",
+        "Kitchen"
+      ]
+    },
+    {
+      "id": "W0002",
+      "length": 4.98,
+      "exterior": true,
+      "rooms": [
+        "Living Room"
+      ]
+    },
+    {
+      "id": "W0003",
+      "length": 4.0,
+      "exterior": true,
+      "rooms": [
+        "Living Room"
+      ]
+    },
+    {
+      "id": "W0004",
+      "length": 1.96,
+      "exterior": true,
+      "rooms": [
+        "Kitchen"
+      ]
+    },
+    {
+      "id": "W0005",
+      "length": 3.0,
+      "exterior": false,
+      "rooms": [
+        "Kitchen",
+        "Hallway"
+      ]
+    },
+    {
+      "id": "W0006",
+      "length": 3.96,
+      "exterior": false,
+      "rooms": [
+        "Kitchen",
+        "Bedroom"
+      ]
+    },
+    {
+      "id": "W0007",
+      "length": 3.0,
+      "exterior": false,
+      "rooms": [
+        "Kitchen",
+        "Hallway"
+      ]
+    },
+    {
+      "id": "W0008",
+      "length": 1.96,
+      "exterior": true,
+      "rooms": [
+        "Kitchen"
+      ]
+    },
+    {
+      "id": "W0009",
+      "length": 2.0,
+      "exterior": false,
+      "rooms": [
+        "Bedroom",
+        "Hallway"
+      ]
+    },
+    {
+      "id": "W0010",
+      "length": 2.98,
+      "exterior": true,
+      "rooms": [
+        "Bedroom"
+      ]
+    },
+    {
+      "id": "W0011",
+      "length": 3.98,
+      "exterior": true,
+      "rooms": [
+        "Bedroom"
+      ]
+    },
+    {
+      "id": "W0012",
+      "length": 2.98,
+      "exterior": false,
+      "rooms": [
+        "Bedroom",
+        "Bathroom"
+      ]
+    },
+    {
+      "id": "W0013",
+      "length": 1.96,
+      "exterior": false,
+      "rooms": [
+        "Bedroom",
+        "Hallway"
+      ]
+    },
+    {
+      "id": "W0014",
+      "length": 2.98,
+      "exterior": true,
+      "rooms": [
+        "Bathroom"
+      ]
+    },
+    {
+      "id": "W0015",
+      "length": 3.0,
+      "exterior": true,
+      "rooms": [
+        "Bathroom"
+      ]
+    },
+    {
+      "id": "W0016",
+      "length": 2.98,
+      "exterior": true,
+      "rooms": [
+        "Bathroom"
+      ]
+    },
+    {
+      "id": "W0017",
+      "length": 2.98,
+      "exterior": false,
+      "rooms": [
+        "Hallway",
+        "Kitchen"
+      ]
+    },
+    {
+      "id": "W0018",
+      "length": 1.98,
+      "exterior": false,
+      "rooms": [
+        "Hallway",
+        "Bedroom"
+      ]
+    },
+    {
+      "id": "W0019",
+      "length": 3.96,
+      "exterior": true,
+      "rooms": [
+        "Hallway"
+      ]
+    },
+    {
+      "id": "W0020",
+      "length": 2.98,
+      "exterior": false,
+      "rooms": [
+        "Hallway",
+        "Kitchen"
+      ]
+    },
+    {
+      "id": "W0021",
+      "length": 3.96,
+      "exterior": true,
+      "rooms": [
+        "Hallway"
+      ]
+    }
+  ],
+  "doors": [
+    {
+      "wall_id": "W0001",
+      "center": [
+        5.0,
+        2.0
+      ],
+      "width": 0.9,
+      "rooms": [
+        "Living Room",
+        "Kitchen"
+      ],
+      "is_exterior": false,
+      "door_type": "interior_swing"
+    },
+    {
+      "wall_id": "W0005",
+      "center": [
+        8.48,
+        0.0
+      ],
+      "width": 0.9,
+      "rooms": [
+        "Kitchen",
+        "Hallway"
+      ],
+      "is_exterior": false,
+      "door_type": "interior_swing"
+    },
+    {
+      "wall_id": "W0006",
+      "center": [
+        10.0,
+        2.0
+      ],
+      "width": 0.9,
+      "rooms": [
+        "Kitchen",
+        "Bedroom"
+      ],
+      "is_exterior": false,
+      "door_type": "interior_swing"
+    },
+    {
+      "wall_id": "W0009",
+      "center": [
+        11.02,
+        0.0
+      ],
+      "width": 0.9,
+      "rooms": [
+        "Bedroom",
+        "Hallway"
+      ],
+      "is_exterior": false,
+      "door_type": "interior_swing"
+    },
+    {
+      "wall_id": "W0012",
+      "center": [
+        13.51,
+        4.0
+      ],
+      "width": 0.9,
+      "rooms": [
+        "Bedroom",
+        "Bathroom"
+      ],
+      "is_exterior": false,
+      "door_type": "interior_swing"
+    },
+    {
+      "wall_id": "W0000",
+      "center": [
+        2.49,
+        0.0
+      ],
+      "width": 0.9,
+      "rooms": [
+        "Living Room"
+      ],
+      "is_exterior": true,
+      "door_type": "exterior_swing"
+    }
+  ],
+  "windows": [
+    {
+      "wall_id": "W0002",
+      "center": [
+        2.49,
+        4.0
+      ],
+      "width": 2.1,
+      "room": "Living Room",
+      "room_type": "living",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0003",
+      "center": [
+        0.0,
+        2.0
+      ],
+      "width": 2.1,
+      "room": "Living Room",
+      "room_type": "living",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0010",
+      "center": [
+        13.51,
+        0.0
+      ],
+      "width": 1.8,
+      "room": "Bedroom",
+      "room_type": "bedroom",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0011",
+      "center": [
+        15.0,
+        1.99
+      ],
+      "width": 1.8,
+      "room": "Bedroom",
+      "room_type": "bedroom",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0014",
+      "center": [
+        15.0,
+        5.51
+      ],
+      "width": 1.0,
+      "room": "Bathroom",
+      "room_type": "bathroom",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0015",
+      "center": [
+        13.5,
+        7.0
+      ],
+      "width": 1.0,
+      "room": "Bathroom",
+      "room_type": "bathroom",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0016",
+      "center": [
+        12.0,
+        5.51
+      ],
+      "width": 1.0,
+      "room": "Bathroom",
+      "room_type": "bathroom",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0019",
+      "center": [
+        12.0,
+        1.47
+      ],
+      "width": 1.0,
+      "room": "Hallway",
+      "room_type": "hallway",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    },
+    {
+      "wall_id": "W0021",
+      "center": [
+        7.0,
+        2.53
+      ],
+      "width": 1.0,
+      "room": "Hallway",
+      "room_type": "hallway",
+      "sill_height": 0.9,
+      "glazing": "double_pane"
+    }
+  ]
+}
