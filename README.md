@@ -22,13 +22,13 @@ python beld/v52_optimizer.py
 From a fresh clone, run the test suite from the repository root:
 
 ```bash
-PYTHONPATH=. pytest -q
+pytest -q
 ```
 
 To run only the main smoke and validation checks:
 
 ```bash
-PYTHONPATH=. pytest -q tests/test_smoke.py tests/test_validation.py
+pytest -q tests/test_smoke.py tests/test_validation.py
 ```
 
 ## CI
@@ -36,5 +36,5 @@ PYTHONPATH=. pytest -q tests/test_smoke.py tests/test_validation.py
 Continuous integration should use the same repository-root command:
 
 ```bash
-PYTHONPATH=. pytest -q
+pytest -q
 ```
