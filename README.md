@@ -16,3 +16,25 @@ python beld/v52_optimizer.py
 ## Notes
 
 `v52_optimizer.py` extracts wall segments from room polygons, classifies interior/exterior walls, places doors on interior shared walls, places windows on exterior walls, and exports an SVG preview.
+
+## Running tests
+
+From a fresh clone, run the test suite from the repository root:
+
+```bash
+PYTHONPATH=. pytest -q
+```
+
+To run only the main smoke and validation checks:
+
+```bash
+PYTHONPATH=. pytest -q tests/test_smoke.py tests/test_validation.py
+```
+
+## CI
+
+Continuous integration should use the same repository-root command:
+
+```bash
+PYTHONPATH=. pytest -q
+```
