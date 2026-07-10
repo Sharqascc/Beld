@@ -8,13 +8,13 @@ class SVGElementMixin:
     def _render_style(self) -> str:
         return (
             "<style>"
-            f".room{{fill:{self.ROOM_FILL};stroke:{self.ROOM_STROKE};stroke-width:2;}}"
-            f".label{{font-family:Arial,sans-serif;font-size:12px;text-anchor:middle;fill:{self.LABEL_COLOUR};}}"
-            ".label-sub{font-size:10px;}"
-            f".door{{stroke:{self.DOOR_COLOUR};stroke-width:2;fill:none;}}"
-            f".door-arc{{stroke:{self.DOOR_ARC_COLOUR};stroke-width:1.5;fill:none;stroke-dasharray:4,3;}}"
-            f".ext-door{{stroke:{self.EXT_DOOR_COLOUR};stroke-width:2.5;fill:none;}}"
-            f".window{{fill:{self.WINDOW_FILL};fill-opacity:0.7;stroke:{self.WINDOW_STROKE};stroke-width:2;}}"
+            ".room{fill:#fafafa;stroke:#666;stroke-width:1.2;}"
+            ".label{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:600;text-anchor:middle;fill:#222;}"
+            ".label-sub{font-size:9px;font-weight:400;fill:#666;}"
+            ".door{stroke:#222;stroke-width:1.6;fill:none;}"
+            ".door-arc{stroke:#666;stroke-width:1;fill:none;stroke-dasharray:3,2;}"
+            ".ext-door{stroke:#111;stroke-width:2;fill:none;}"
+            ".window{fill:#ffffff;fill-opacity:1;stroke:#222;stroke-width:1.4;}"
             "</style>"
         )
 
