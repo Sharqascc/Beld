@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
+from shapely.geometry import LineString
 from beld.models import FloorPlan
 from beld.geometry import distance
 
@@ -51,9 +52,39 @@ def validate_openings(plan: FloorPlan) -> List[str]:
     return warnings
 
 
+def validate_wall_coverage(plan: FloorPlan, tol: float = 0.02) -> List[str]:
+    warnings: List[str] = []
+
+    wall_lines = [
+        LineString([(w.x1, w.y1), (w.x2, w.y2)])
+        for w in plan.walls
+    ]
+
+    for room in plan.rooms:
+        coords = list(room.polygon.exterior.coords)
+        for i in range(len(coords) - 1):
+            edge = LineString([coords[i], coords[i + 1]])
+            uncovered = edge
+            for wl in wall_lines:
+                if uncovered.is_empty:
+                    break
+                if uncovered.buffer(tol, cap_style=2).intersects(wl):
+                    uncovered = uncovered.difference(wl.buffer(tol, cap_style=2))
+
+            if not uncovered.is_empty and getattr(uncovered, "length", 0.0) > tol:
+                room_name = getattr(room, "room_id", getattr(room, "id", "unknown"))
+                warnings.append(
+                    f"Wall coverage gap for room {room_name} "
+                    f"on edge {tuple(coords[i])}->{tuple(coords[i + 1])}"
+                )
+
+    return warnings
+
+
 def attach_warnings(plan: FloorPlan) -> FloorPlan:
     warnings = []
     warnings.extend(validate_openings(plan))
+    warnings.extend(validate_wall_coverage(plan))
     if warnings:
         plan.metadata["warnings"] = warnings
     return plan
@@ -61,3 +92,4 @@ def attach_warnings(plan: FloorPlan) -> FloorPlan:
 
 attachwarnings = attach_warnings
 validateopenings = validate_openings
+validatewallcoverage = validate_wall_coverage
