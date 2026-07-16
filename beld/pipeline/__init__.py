@@ -31,12 +31,25 @@ Subclass FloorPlanPipeline and override individual hook methods:
 """
 
 from __future__ import annotations
+from dataclasses import asdict, is_dataclass
 from typing import Dict, List, Optional
 
 from beld.models import FloorPlan, Room
 from beld.openings import OpeningPlacer
-from beld.validation import attach_warnings
+from beld.validation import attach_warnings, validate_plan
 from beld.walls import extract_wall_segments, split_walls
+
+
+def _to_plain(obj):
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+    if is_dataclass(obj):
+        return asdict(obj)
+    if isinstance(obj, list):
+        return [_to_plain(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: _to_plain(v) for k, v in obj.items()}
+    return obj
 
 
 class FloorPlanPipeline:
@@ -119,7 +132,22 @@ class FloorPlanPipeline:
 
     def post_validate(self, plan: FloorPlan) -> FloorPlan:
         if self.validate:
+            report = validate_plan(plan)
+            if getattr(plan, "metadata", None) is None:
+                plan.metadata = {}
+
+            plan.metadata["validation_report"] = _to_plain(report)
+            plan.metadata["design_issues"] = _to_plain(getattr(report, "issues", []))
+
             attach_warnings(plan)
+
+            existing_warnings = list(plan.metadata.get("warnings", []))
+            for issue in getattr(report, "issues", []):
+                message = getattr(issue, "message", None)
+                if message and str(message) not in existing_warnings:
+                    existing_warnings.append(str(message))
+            if existing_warnings:
+                plan.metadata["warnings"] = existing_warnings
         return plan
 
     # ------------------------------------------------------------------
