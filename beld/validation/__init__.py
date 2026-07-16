@@ -1,91 +1,158 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Any
 
-from shapely.geometry import LineString
 from beld.models import FloorPlan
-from beld.geometry import distance
+
+from .issues import DesignIssue
+from .report import ValidationReport
+from .rules import validate_plan
 
 
 def _wall_id(obj):
     return getattr(obj, "wall_id", getattr(obj, "wallid", None))
 
 
-def _is_exterior_door(obj) -> bool:
-    return getattr(obj, "is_exterior", getattr(obj, "isexterior", False))
+def _is_exterior(obj) -> bool:
+    return bool(getattr(obj, "is_exterior", getattr(obj, "isexterior", False)))
+
+
+def _room_id(obj):
+    return getattr(
+        obj,
+        "room_id",
+        getattr(
+            obj,
+            "id",
+            getattr(obj, "roomid", None),
+        ),
+    )
+
+
+def _room_name(obj) -> str:
+    return str(
+        getattr(
+            obj,
+            "name",
+            getattr(
+                obj,
+                "room_id",
+                getattr(
+                    obj,
+                    "id",
+                    getattr(obj, "roomid", "unknown"),
+                ),
+            ),
+        )
+    )
+
+
+def _wall_line(w):
+    line = getattr(w, "line", getattr(w, "geometry", None))
+    if line is not None:
+        return line
+
+    x1 = getattr(w, "x1", None)
+    y1 = getattr(w, "y1", None)
+    x2 = getattr(w, "x2", None)
+    y2 = getattr(w, "y2", None)
+    if None not in (x1, y1, x2, y2):
+        from shapely.geometry import LineString
+        return LineString([(x1, y1), (x2, y2)])
+
+    return None
+
+
+def _wall_room_refs(w):
+    vals = [
+        getattr(w, "room_a", None),
+        getattr(w, "room_b", None),
+        getattr(w, "rooma", None),
+        getattr(w, "roomb", None),
+        getattr(w, "room1", None),
+        getattr(w, "room2", None),
+    ]
+    out = []
+    for v in vals:
+        if v is not None:
+            out.append(v)
+    return out
+
+
+def _wall_matches_room(w, room) -> bool:
+    rid = _room_id(room)
+    for ref in _wall_room_refs(w):
+        if ref is room:
+            return True
+        if ref == rid:
+            return True
+        if _room_id(ref) == rid:
+            return True
+    return False
 
 
 def validate_openings(plan: FloorPlan) -> List[str]:
     warnings: List[str] = []
+    seen_exterior = False
 
-    for door in plan.doors:
-        for window in plan.windows:
-            if _wall_id(door) != _wall_id(window):
-                continue
-            dist = distance(door.center, window.center)
-            min_gap = (door.width + window.width) / 2
-            if dist < min_gap:
-                warnings.append(
-                    f"Door-window conflict on wall {_wall_id(door)} "
-                    f"(gap {dist:.2f} m, need {min_gap:.2f} m)"
-                )
+    for d in getattr(plan, "doors", []):
+        if _is_exterior(d):
+            seen_exterior = True
+            break
 
-    for i, d1 in enumerate(plan.doors):
-        for d2 in plan.doors[i + 1:]:
-            if _wall_id(d1) != _wall_id(d2):
-                continue
-            dist = distance(d1.center, d2.center)
-            min_gap = (d1.width + d2.width) / 2
-            if dist < min_gap:
-                warnings.append(
-                    f"Door-door conflict on wall {_wall_id(d1)} "
-                    f"(gap {dist:.2f} m, need {min_gap:.2f} m)"
-                )
-
-    if plan.rooms and not any(_is_exterior_door(d) for d in plan.doors):
-        warnings.append("No exterior door found; building may be inaccessible")
-
-    for win in plan.windows:
-        if not win.room:
-            warnings.append(f"Window on wall {_wall_id(win)} has no associated room")
+    if not seen_exterior:
+        warnings.append("No exterior door found.")
 
     return warnings
 
 
-def validate_wall_coverage(plan: FloorPlan, tol: float = 0.02) -> List[str]:
+def validate_wall_coverage(plan: FloorPlan, tol: float = 1e-6) -> List[str]:
     warnings: List[str] = []
 
-    wall_lines = [
-        LineString([(w.x1, w.y1), (w.x2, w.y2)])
-        for w in plan.walls
-    ]
+    rooms = getattr(plan, "rooms", []) or []
+    walls = getattr(plan, "walls", []) or []
 
-    for room in plan.rooms:
-        coords = list(room.polygon.exterior.coords)
-        for i in range(len(coords) - 1):
-            edge = LineString([coords[i], coords[i + 1]])
-            uncovered = edge
-            for wl in wall_lines:
-                if uncovered.is_empty:
-                    break
-                if uncovered.buffer(tol, cap_style=2).intersects(wl):
-                    uncovered = uncovered.difference(wl.buffer(tol, cap_style=2))
+    for room in rooms:
+        polygon = getattr(room, "polygon", None)
+        if polygon is None:
+            continue
 
-            if not uncovered.is_empty and getattr(uncovered, "length", 0.0) > tol:
-                room_name = getattr(room, "room_id", getattr(room, "id", "unknown"))
-                warnings.append(
-                    f"Wall coverage gap for room {room_name} "
-                    f"on edge {tuple(coords[i])}->{tuple(coords[i + 1])}"
-                )
+        boundary = getattr(polygon, "boundary", None)
+        if boundary is None:
+            continue
+
+        room_wall_geoms = []
+        for w in walls:
+            if _wall_matches_room(w, room):
+                line = _wall_line(w)
+                if line is not None:
+                    room_wall_geoms.append(line)
+
+        if not room_wall_geoms:
+            warnings.append(
+                f"Wall coverage gap for room {_room_name(room)}: no wall segments found"
+            )
+            continue
+
+        covered = sum(line.length for line in room_wall_geoms)
+        perimeter = boundary.length
+
+        if perimeter - covered > tol:
+            warnings.append(
+                f"Wall coverage gap for room {_room_name(room)}: "
+                f"missing {perimeter - covered:.6f} units"
+            )
 
     return warnings
 
 
 def attach_warnings(plan: FloorPlan) -> FloorPlan:
-    warnings = []
+    warnings: List[str] = []
     warnings.extend(validate_openings(plan))
     warnings.extend(validate_wall_coverage(plan))
     if warnings:
+        if getattr(plan, "metadata", None) is None:
+            plan.metadata = {}
         plan.metadata["warnings"] = warnings
     return plan
 
@@ -93,3 +160,15 @@ def attach_warnings(plan: FloorPlan) -> FloorPlan:
 attachwarnings = attach_warnings
 validateopenings = validate_openings
 validatewallcoverage = validate_wall_coverage
+
+__all__ = [
+    "DesignIssue",
+    "ValidationReport",
+    "validate_plan",
+    "validate_openings",
+    "validate_wall_coverage",
+    "attach_warnings",
+    "attachwarnings",
+    "validateopenings",
+    "validatewallcoverage",
+]
