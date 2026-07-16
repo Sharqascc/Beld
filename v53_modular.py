@@ -14,12 +14,26 @@ Outputs
     floor_plan_v53.json
 """
 
+from dataclasses import asdict, is_dataclass
 from shapely.geometry import Polygon
 
 from beld.models import Room
 from beld.pipeline import FloorPlanPipeline
 from beld.rendering import SVGRenderer
 from beld.export import export_svg, export_json
+from beld.validation import validate_plan
+
+
+def _to_plain(obj):
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+    if is_dataclass(obj):
+        return asdict(obj)
+    if isinstance(obj, list):
+        return [_to_plain(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: _to_plain(v) for k, v in obj.items()}
+    return obj
 
 
 def main():
@@ -44,6 +58,27 @@ def main():
         validate=True,
     ).run(rooms)
 
+    report = validate_plan(plan)
+    if getattr(plan, "metadata", None) is None:
+        plan.metadata = {}
+
+    plan.metadata["validation_report"] = _to_plain(report)
+    plan.metadata["design_issues"] = _to_plain(getattr(report, "issues", []))
+
+    legacy_warnings = []
+    for issue in getattr(report, "issues", []):
+        message = getattr(issue, "message", None)
+        severity = getattr(issue, "severity", None)
+        if message and severity in ("warning", "error", "info", None):
+            legacy_warnings.append(str(message))
+
+    existing_warnings = list(plan.metadata.get("warnings", []))
+    for w in legacy_warnings:
+        if w not in existing_warnings:
+            existing_warnings.append(w)
+    if existing_warnings:
+        plan.metadata["warnings"] = existing_warnings
+
     # ---------------------------------------------------------------
     # 3.  Export
     # ---------------------------------------------------------------
@@ -57,6 +92,17 @@ def main():
     print(f"Walls    : {len(plan.walls)}")
     print(f"Doors    : {len(plan.doors)}")
     print(f"Windows  : {len(plan.windows)}")
+
+    issues = plan.metadata.get("design_issues", [])
+    if issues:
+        print(f"\nStructured issues: {len(issues)}")
+        for issue in issues:
+            severity = issue.get("severity", "unknown") if isinstance(issue, dict) else getattr(issue, "severity", "unknown")
+            code = issue.get("code", "UNKNOWN") if isinstance(issue, dict) else getattr(issue, "code", "UNKNOWN")
+            message = issue.get("message", "") if isinstance(issue, dict) else getattr(issue, "message", "")
+            print(f"  [{severity}] {code}: {message}")
+    else:
+        print("\nNo structured validation issues.")
 
     warnings = plan.metadata.get("warnings", [])
     if warnings:
